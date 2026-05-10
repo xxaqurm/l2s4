@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS location (  -- локация
     desktop INT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS rist_assessment (  -- оценка рисков
+CREATE TABLE IF NOT EXISTS risk_assessment (  -- оценка рисков
     id SERIAL PRIMARY KEY,
 
     occurrence_probability INT NOT NULL,

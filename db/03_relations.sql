@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS assessment_result (  -- результаты оцен
     id SERIAL PRIMARY KEY,
 
     id_vulnerability INT NOT NULL REFERENCES vulnerability(id) ON DELETE CASCADE,
-    id_assessment INT NOT NULL REFERENCES assessment(id) ON DELETE CASCADE
+    id_assessment INT NOT NULL REFERENCES risk_assessment(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS exploited_vulnerability (  -- эксплуатируемая уязвимсоть
