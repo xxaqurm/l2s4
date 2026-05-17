@@ -1,4 +1,17 @@
 -- Основные сущности
+
+CREATE TABLE IF NOT EXISTS employee (  -- сотрудники
+    id SERIAL PRIMARY KEY,
+    
+    id_departament INT REFERENCES departament(id) ON DELETE CASCADE,
+    id_duty_roster INT REFERENCES duty_roster(id) ON DELETE CASCADE,
+
+    first_name VARCHAR(20) NOT NULL,
+    middle_name VARCHAR(20),
+    last_name VARCHAR(20) NOT NULL,
+    hire_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS vulnerability (  -- уязвимости
     id SERIAL PRIMARY KEY,
 
@@ -6,7 +19,8 @@ CREATE TABLE IF NOT EXISTS vulnerability (  -- уязвимости
     id_vulnerability_details INT NOT NULL REFERENCES vulnerability_details(id) ON DELETE CASCADE,
 
     name VARCHAR(50) NOT NULL,
-    hack_type VARCHAR(50) NOT NULL
+    hack_type VARCHAR(50) NOT NULL,
+    id_employee INT REFERENCES employee(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS info_asset (  -- информационные активы
@@ -15,7 +29,8 @@ CREATE TABLE IF NOT EXISTS info_asset (  -- информационные акт�
 
     name VARCHAR(50) NOT NULL,
     asset_type VARCHAR(50) NOT NULL,
-    invent_number INT NOT NULL
+    invent_number INT NOT NULL,
+    expl_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS asset_description (  -- характеристика актива
@@ -43,18 +58,6 @@ CREATE TABLE IF NOT EXISTS monitoring_tools (  -- инструменты мон�
     collection_method VARCHAR(100) NOT NULL,
     collection_delay INT NOT NULL,
     agent_status VARCHAR(20) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS employee (  -- сотрудники
-    id SERIAL PRIMARY KEY,
-    
-    id_departament INT REFERENCES departament(id) ON DELETE CASCADE,
-    id_duty_roster INT REFERENCES duty_roster(id) ON DELETE CASCADE,
-
-    first_name VARCHAR(20) NOT NULL,
-    middle_name VARCHAR(20),
-    last_name VARCHAR(20) NOT NULL,
-    hire_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS accounts (  -- учетные записи
@@ -92,7 +95,8 @@ CREATE TABLE IF NOT EXISTS remedial_measure (  -- мера устранения
 
     title VARCHAR(50) NOT NULL,
     description VARCHAR(200) NOT NULL,
-    average_actions INT NOT NULL
+    average_actions INT NOT NULL,
+    exec_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS playbook (  -- playbook
