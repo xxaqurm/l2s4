@@ -43,9 +43,9 @@ CREATE TABLE IF NOT EXISTS location (  -- локация
 CREATE TABLE IF NOT EXISTS risk_assessment (  -- оценка рисков
     id SERIAL PRIMARY KEY,
 
-    occurrence_probability INT NOT NULL,
-    potentional_damage INT NOT NULL,
-    final_grade INT NOT NULL
+    occurrence_probability INT NOT NULL CHECK(occurrence_probability >= 1 AND occurrence_probability <= 10),
+    potentional_damage INT NOT NULL CHECK(potentional_damage >= 1 AND potentional_damage <= 10),
+    final_grade INT GENERATED ALWAYS AS (occurrence_probability * potentional_damage) STORED
 );
 
 CREATE TABLE IF NOT EXISTS vulnerability_details (  -- детали уязвимости
@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS departament (  -- подразделение
     id SERIAL PRIMARY KEY,
     
     address VARCHAR(50) NOT NULL,
+    name VARCHAR(50) NOT NULL UNIQUE, 
     opening_time TIMESTAMP NOT NULL,
     closing_time TIMESTAMP NOT NULL
 );
