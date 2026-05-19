@@ -3,8 +3,8 @@ RETURNS SETOF vulnerability AS $$
 BEGIN
     RETURN QUERY
     SELECT v.*
-    FROM vulnerability v
-    JOIN risk_assessment ra ON v.id_risk_assessment = ra.id 
+    FROM vulnerability AS v
+    JOIN risk_assessment AS ra ON v.id_risk_assessment = ra.id
     WHERE ra.final_grade >= 70;
 END;
 $$ LANGUAGE plpgsql;
@@ -13,7 +13,7 @@ CREATE OR REPLACE FUNCTION server_assets() -- 2
 RETURNS SETOF info_asset AS $$
 BEGIN
     RETURN QUERY
-    SELECT * 
+    SELECT *
     FROM info_asset
     WHERE asset_type = 'сервер';
 END;
@@ -24,8 +24,8 @@ RETURNS SETOF employee AS $$
 BEGIN
     RETURN QUERY
     SELECT e.*
-    FROM employee e 
-    JOIN departament d ON e.id_departament = d.id 
+    FROM employee AS e 
+    JOIN departament AS d ON e.id_departament = d.id 
     WHERE d.name = 'ИБ';
 END;
 $$ LANGUAGE plpgsql;
@@ -55,8 +55,8 @@ RETURNS SETOF vulnerability AS $$
 BEGIN
     RETURN QUERY
     SELECT v.*
-    FROM vulnerability v
-    JOIN vulnerability_info_asset via ON v.id = via.id_vulnerability
+    FROM vulnerability AS v
+    JOIN vulnerability_info_asset AS via ON v.id = via.id_vulnerability
     WHERE via.id_info_asset = target_info_asset;
 END;
 $$ LANGUAGE plpgsql;

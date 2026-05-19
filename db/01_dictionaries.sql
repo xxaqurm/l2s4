@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS risk_assessment (  -- оценка рисков
 
 CREATE TABLE IF NOT EXISTS vulnerability_details (  -- детали уязвимости
     id SERIAL PRIMARY KEY,
-    
+
     technical_description VARCHAR(200) NOT NULL,
     vulnerable_component VARCHAR(50) NOT NULL
 );

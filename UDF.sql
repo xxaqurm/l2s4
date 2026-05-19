@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION avg_incident_response_time(start_date TIMESTAMP, end_date TIMESTAMP) -- 1
+CREATE OR REPLACE FUNCTION avg_incident_response_time(start_date TIMESTAMP, end_date TIMESTAMP) -- среднее время реакции на инциденты
 RETURNS INTERVAL AS $$
 DECLARE
     avg_response INTERVAL;
