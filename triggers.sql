@@ -85,7 +85,15 @@ RETURNS TRIGGER AS $$
 BEGIN
     UPDATE info_asset
     SET count_of_incidents = count_of_incidents + 1
-    WHERE id = 
+    WHERE id = NEW.id_info_asset;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_count_of_incidents_trigger
+    AFTER INSERT ON compromised_info_asset
+    FOR EACH ROW
+    EXECUTE FUNCTION update_count_of_incidents(); 
 
 
 
