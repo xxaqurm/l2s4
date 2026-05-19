@@ -93,12 +93,7 @@ CREATE TABLE IF NOT EXISTS remedial_measure (  -- мера устранения
 
     id_incident INT NOT NULL REFERENCES incident(id) ON DELETE CASCADE,
     id_access_perm INT REFERENCES access_permissions(id) ON DELETE CASCADE,
-
-<<<<<<< HEAD
-    title VARCHAR(50) NOT NULL,
-=======
     title VARCHAR(50),
->>>>>>> origin/main
     description VARCHAR(200),
     average_actions INT,
     exec_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
