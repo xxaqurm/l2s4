@@ -1,8 +1,3 @@
-CREATE TRIGGER incident_close_trigger
-BEFORE UPDATE ON incident
-FOR EACH ROW
-EXECUTE FUNCTION update_incident_close_time();
-=======
 CREATE OR REPLACE FUNCTION set_reg_date() -- 1
 RETURNS TRIGGER AS $$
 BEGIN 
@@ -168,3 +163,8 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER incident_close_trigger
+BEFORE UPDATE ON incident
+FOR EACH ROW
+EXECUTE FUNCTION update_incident_close_time();
