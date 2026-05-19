@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS info_asset (  -- информационные акт�
     name VARCHAR(50) NOT NULL,
     asset_type VARCHAR(50) NOT NULL,
     invent_number INT NOT NULL,
+    count_of_incidents INT, 
     expl_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
