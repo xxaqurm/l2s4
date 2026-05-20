@@ -234,7 +234,7 @@ BEGIN
         SELECT AVG(vuln_count)
         FROM (
             SELECT COUNT(*) vuln_count
-            FROM vulernability_info_asset
+            FROM vulnerability_info_asset
             GROUP BY id_info_asset
         ) as subquery
     );
@@ -246,7 +246,7 @@ RETURNS SETOF incident AS $$
 BEGIN
     RETURN QUERY
     SELECT inc.*
-    FROM incident
+    FROM incident inc
     WHERE inc.detective_time BETWEEN start_period AND end_period
     AND inc.detective_time > (
         SELECT TO_TIMESTAMP(AVG(EXTRACT(EPOCH FROM sub_inc.detective_time)))
@@ -272,15 +272,15 @@ BEGIN
         LIMIT 1
     );
 END;
-$$ LANGUAGE plpgsql
+$$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION crit_vuln_than_avg () -- 21
+CREATE OR REPLACE FUNCTION crit_vuln_than_avg () 
 RETURNS SETOF vulnerability AS $$
 BEGIN
     RETURN QUERY
     SELECT vul.*
     FROM vulnerability vul
-    JOIN aassessment_result ar ON vul.id = ar.id_vulnerabiblty
+    JOIN assessment_result ar ON vul.id = ar.id_vulnerability
     JOIN risk_assessment ra ON ra.id = ar.id_assessment 
     WHERE ra.final_grade > (SELECT AVG(final_grade) FROM risk_assessment);
 END;
