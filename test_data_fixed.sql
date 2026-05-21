@@ -198,12 +198,7 @@ INSERT INTO assessment_result (id_vulnerability, id_assessment) VALUES
 (4, 4),
 (5, 5);
 
-INSERT INTO exploited_vulnerability (id_vulnerability, id_incident, description) VALUES
-(1, 1, 'Успешная эксплуатация SQL injection'),
-(2, 2, 'Использование команды для доступа'),
-(4, 4, 'Критическая уязвимость эксплуатирована'),
-(3, 5, 'Path traversal в системе');
-
+-- ТАБЛИЦЫ СВЯЗЕЙ И ЖУРНАЛЫ
 
 INSERT INTO mapping_mitre (id_tactic, id_technique) VALUES
 (1, 1),
@@ -223,11 +218,20 @@ INSERT INTO fixed_vulnerabilities (id_vulnerability, id_patch) VALUES
 (1, 1),
 (2, 2),
 (3, 1),
-(4, 2);
+(4, 2),
+(5, 1);
 
 INSERT INTO installed_software (id_info_asset, id_software) VALUES
 (1, 1),
+(1, 2),
 (2, 2),
 (3, 3),
 (4, 1),
-(1, 2);
+(4, 2);
+
+INSERT INTO exploited_vulnerability (id_vulnerability, id_incident, description) VALUES
+(1, 1, 'SQL Injection была использована для доступа к БД'),
+(2, 2, 'Command Injection позволила выполнить системные команды'),
+(3, 3, 'Path Traversal использована для чтения конфиденциальных файлов'),
+(4, 4, 'Critical SQL Vuln была эксплуатирована в DDoS атаке'),
+(5, 5, 'Техника низкого приоритета была использована в фишинг компании');

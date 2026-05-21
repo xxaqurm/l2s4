@@ -96,8 +96,6 @@ CREATE TRIGGER update_count_of_incidents_trigger
     EXECUTE FUNCTION update_count_of_incidents(); 
 
 
-
-
 CREATE OR REPLACE FUNCTION actions_aft_upd_resolve_incident()  -- 4
 RETURNS TRIGGER AS $$
 BEGIN
