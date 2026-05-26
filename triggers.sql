@@ -27,22 +27,21 @@ CREATE OR REPLACE TRIGGER trigger_check_severity_level
     FOR EACH ROW
     EXECUTE FUNCTION check_severity_level();
 
-CREATE OR REPLACE FUNCTION lock_insert_without_source() -- 3 (не работает хуйня какая-то)
+CREATE OR REPLACE FUNCTION check_incident_source() -- 3
 RETURNS TRIGGER AS $$
-DECLARE
-    source_count INTEGER;
 BEGIN
-    SELECT COUNT(*) INTO source_count
-    FROM incident_source
-    WHERE id_incident = NEW.id;
-
-    IF source_count = 0 THEN 
-        RAISE EXCEPTION 'Нельзя добавить инцидент без источника %', NEW.id;
+    IF NEW.source IS NULL OR TRIM(NEW.source) = '' THEN
+        RAISE EXCEPTION 'Источник возникновения инцидента обязателен';
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trigger_check_incident_source
+BEFORE INSERT ON incident
+FOR EACH ROW
+EXECUTE FUNCTION check_incident_source();
 
 DROP TRIGGER IF EXISTS trigger_lock_insert_without_source ON incident;
 CREATE CONSTRAINT TRIGGER trigger_lock_insert_without_source
@@ -74,7 +73,26 @@ FOR EACH ROW
 EXECUTE FUNCTION actions_aft_upd_resolve_incident();
 
 -- 5
+CREATE OR REPLACE FUNCTION control_fix_deadline() -- 5
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.fixed_time IS NOT NULL
+       AND NEW.reg_date IS NOT NULL
+       AND NEW.fixed_time > NEW.reg_date + INTERVAL '72 hours' THEN
 
+        NEW.processing_delay := TRUE;
+    ELSE
+        NEW.processing_delay := FALSE;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trigger_control_fix_deadline
+BEFORE UPDATE ON incident
+FOR EACH ROW
+EXECUTE FUNCTION control_fix_deadline();
 
 CREATE OR REPLACE FUNCTION incidents_set_new_status_on_create()  -- 6
 RETURNS TRIGGER AS $$
@@ -108,12 +126,25 @@ BEFORE DELETE ON vulnerability
 FOR EACH ROW
 EXECUTE FUNCTION prevent_vulnerability_delete_with_incidents();
 
--- CREATE OR REPLACE FUNCTION update_count_of_incidents()  -- 8
--- RETURNS TRIGGER AS $$
--- BEGIN
---     UPDATE info_asset
---     SET count_of_incidents = count_of_incidents + 1
---     WHERE id = 
+CREATE OR REPLACE FUNCTION update_asset_incident_count() -- 8
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE information_asset
+    SET incident_count = (
+        SELECT COUNT(*)
+        FROM incident
+        WHERE asset_id = NEW.asset_id
+    )
+    WHERE id = NEW.asset_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trigger_update_asset_incident_count
+AFTER INSERT ON incident
+FOR EACH ROW
+EXECUTE FUNCTION update_asset_incident_count();
 
 CREATE OR REPLACE FUNCTION check_owner_before_work()  -- 9
 RETURNS TRIGGER AS $$
