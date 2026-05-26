@@ -6,8 +6,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_set_incident_reg_date
-    BEFORE INSERT ON incidents
+CREATE OR REPLACE TRIGGER trigger_set_incident_reg_date
+    BEFORE INSERT ON incident
     FOR EACH ROW
     EXECUTE FUNCTION set_reg_date();
 
@@ -15,14 +15,14 @@ CREATE OR REPLACE FUNCTION check_severity_level() -- 2
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.sev_level < 0 OR NEW.sev_level > 100 THEN
-    RAISE EXCEPTION 'Некорректный уровень критичности', NEW.sev_level;
+    RAISE EXCEPTION 'Некорректный уровень критичности: %', NEW.sev_level;
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_check_severity_level
+CREATE OR REPLACE TRIGGER trigger_check_severity_level
     BEFORE INSERT ON severity_level
     FOR EACH ROW
     EXECUTE FUNCTION check_severity_level();
@@ -37,14 +37,15 @@ BEGIN
     WHERE id_incident = NEW.id;
 
     IF source_count = 0 THEN 
-        RAISE EXCEPTION 'Нельзя добавить инцидент без источника', NEW.id;
+        RAISE EXCEPTION 'Нельзя добавить инцидент без источника %', NEW.id;
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_lock_insert_without_source
+DROP TRIGGER IF EXISTS trigger_lock_insert_without_source ON incident;
+CREATE CONSTRAINT TRIGGER trigger_lock_insert_without_source
     AFTER INSERT ON incident
     DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW
@@ -67,7 +68,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER actions_aft_upd_resolve_incident_trigger
+CREATE OR REPLACE TRIGGER actions_aft_upd_resolve_incident_trigger
 AFTER UPDATE ON remedial_measure
 FOR EACH ROW
 EXECUTE FUNCTION actions_aft_upd_resolve_incident();
@@ -83,7 +84,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER incidents_set_new_status_on_create_trigger
+CREATE OR REPLACE TRIGGER incidents_set_new_status_on_create_trigger
 BEFORE INSERT ON incident
 FOR EACH ROW
 EXECUTE FUNCTION incidents_set_new_status_on_create();
@@ -102,7 +103,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER prevent_vulnerability_delete_trigger
+CREATE OR REPLACE TRIGGER prevent_vulnerability_delete_trigger
 BEFORE DELETE ON vulnerability
 FOR EACH ROW
 EXECUTE FUNCTION prevent_vulnerability_delete_with_incidents();
@@ -124,7 +125,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER incidents_check_owner_before_work_trigger
+CREATE OR REPLACE TRIGGER incidents_check_owner_before_work_trigger
 BEFORE UPDATE ON incident
 FOR EACH ROW
 EXECUTE FUNCTION check_owner_before_work();
@@ -139,7 +140,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER incident_close_trigger
+CREATE OR REPLACE TRIGGER incident_close_trigger
 BEFORE UPDATE ON incident
 FOR EACH ROW
 EXECUTE FUNCTION update_incident_close_time();
