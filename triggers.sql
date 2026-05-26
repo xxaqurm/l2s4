@@ -27,7 +27,7 @@ CREATE TRIGGER trigger_check_severity_level
     FOR EACH ROW
     EXECUTE FUNCTION check_severity_level();
 
-CREATE OR REPLACE FUNCTION lock_insert_without_source() -- 3
+CREATE OR REPLACE FUNCTION lock_insert_without_source() -- 3 (не работает хуйня какая-то)
 RETURNS TRIGGER AS $$
 DECLARE
     source_count INTEGER;
@@ -50,41 +50,6 @@ CREATE TRIGGER trigger_lock_insert_without_source
     FOR EACH ROW
     EXECUTE FUNCTION lock_insert_without_source();
 
-CREATE OR REPLACE FUNCTION incident_status_change() -- 4
-RETURNS TRIGGER AS $$
-DECLARE 
-    has_null BOOLEAN;
-BEGIN
-    SELECT EXISTS(
-        SELECT 1 
-        FROM remedial_measure
-        WHERE id_incident = NEW.id_incident and exec_date IS NULL
-    ) INTO has_null;
-
-    IF NOT has_null THEN
-        UPDATE incidents
-        SET status = 'устранен'
-        WHERE id = NEW.id_incident;
-    END IF;
-
-    RETURN NEW;
-END;
-
-CREATE TRIGGER trigger_incident_status_change
-    AFTER INSERT OR UPDATE ON remedial_measure
-    FOR EACH ROW
-    EXECUTE FUNCTION incident_status_change();
-
-CREATE OR REPLACE FUNCTION update_count_of_incidents()  -- 8
-RETURNS TRIGGER AS $$
-BEGIN
-    UPDATE info_asset
-    SET count_of_incidents = count_of_incidents + 1
-    WHERE id = 
-
-
-
-
 CREATE OR REPLACE FUNCTION actions_aft_upd_resolve_incident()  -- 4
 RETURNS TRIGGER AS $$
 BEGIN
@@ -106,6 +71,9 @@ CREATE TRIGGER actions_aft_upd_resolve_incident_trigger
 AFTER UPDATE ON remedial_measure
 FOR EACH ROW
 EXECUTE FUNCTION actions_aft_upd_resolve_incident();
+
+-- 5
+
 
 CREATE OR REPLACE FUNCTION incidents_set_new_status_on_create()  -- 6
 RETURNS TRIGGER AS $$
@@ -138,6 +106,13 @@ CREATE TRIGGER prevent_vulnerability_delete_trigger
 BEFORE DELETE ON vulnerability
 FOR EACH ROW
 EXECUTE FUNCTION prevent_vulnerability_delete_with_incidents();
+
+-- CREATE OR REPLACE FUNCTION update_count_of_incidents()  -- 8
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     UPDATE info_asset
+--     SET count_of_incidents = count_of_incidents + 1
+--     WHERE id = 
 
 CREATE OR REPLACE FUNCTION check_owner_before_work()  -- 9
 RETURNS TRIGGER AS $$
