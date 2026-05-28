@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION set_reg_date() -- 1
 RETURNS TRIGGER AS $$
 BEGIN 
-    NEW.reg_date = NOW();
+    NEW.detective_time = NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -30,25 +30,17 @@ CREATE OR REPLACE TRIGGER trigger_check_severity_level
 CREATE OR REPLACE FUNCTION check_incident_source() -- 3
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NEW.source IS NULL OR TRIM(NEW.source) = '' THEN
-        RAISE EXCEPTION 'Источник возникновения инцидента обязателен';
+    IF NEW.id_incident_source IS NULL THEN
+        RAISE EXCEPTION 'Невозможно добавить инцидент без указания источника его возникновения';
     END IF;
-
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER trigger_check_incident_source
-BEFORE INSERT ON incident
-FOR EACH ROW
-EXECUTE FUNCTION check_incident_source();
-
-DROP TRIGGER IF EXISTS trigger_lock_insert_without_source ON incident;
-CREATE CONSTRAINT TRIGGER trigger_lock_insert_without_source
-    AFTER INSERT ON incident
-    DEFERRABLE INITIALLY DEFERRED
+    BEFORE INSERT ON incident
     FOR EACH ROW
-    EXECUTE FUNCTION lock_insert_without_source();
+    EXECUTE FUNCTION check_incident_source();
 
 CREATE OR REPLACE FUNCTION actions_aft_upd_resolve_incident()  -- 4
 RETURNS TRIGGER AS $$
@@ -72,19 +64,16 @@ AFTER UPDATE ON remedial_measure
 FOR EACH ROW
 EXECUTE FUNCTION actions_aft_upd_resolve_incident();
 
--- 5
 CREATE OR REPLACE FUNCTION control_fix_deadline() -- 5
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.fixed_time IS NOT NULL
-       AND NEW.reg_date IS NOT NULL
-       AND NEW.fixed_time > NEW.reg_date + INTERVAL '72 hours' THEN
-
+       AND NEW.detective_time IS NOT NULL
+       AND NEW.fixed_time > NEW.detective_time + INTERVAL '72 hours' THEN
         NEW.processing_delay := TRUE;
     ELSE
         NEW.processing_delay := FALSE;
     END IF;
-
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -112,39 +101,46 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF EXISTS (
         SELECT 1
-        FROM exploited_vulnerability
-        WHERE id_vulnerability = OLD.id
+        FROM incident
+        WHERE id IN (
+            SELECT id_incident
+            FROM exploited_vulnerability
+            WHERE id_vulnerability = OLD.id
+        )
     ) THEN
-        RAISE EXCEPTION 'Невозможно удалить уязвимость, так как она связана с существующими инцидентами';
+        RAISE EXCEPTION 'Невозможно удалить уязвимость, так как она связана с зарегистрированным инцидентом';
     END IF;
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER prevent_vulnerability_delete_trigger
-BEFORE DELETE ON vulnerability
-FOR EACH ROW
-EXECUTE FUNCTION prevent_vulnerability_delete_with_incidents();
+    BEFORE DELETE ON vulnerability
+    FOR EACH ROW
+    EXECUTE FUNCTION prevent_vulnerability_delete_with_incidents();
 
-CREATE OR REPLACE FUNCTION update_asset_incident_count() -- 8
+CREATE OR REPLACE FUNCTION manage_incident_count()
 RETURNS TRIGGER AS $$
 BEGIN
-    UPDATE information_asset
-    SET incident_count = (
-        SELECT COUNT(*)
-        FROM incident
-        WHERE asset_id = NEW.asset_id
-    )
-    WHERE id = NEW.asset_id;
-
-    RETURN NEW;
+    IF (TG_OP = 'INSERT') THEN
+        UPDATE info_asset
+        SET incident_count = COALESCE(incident_count, 0) + 1
+        WHERE id = NEW.id_info_asset;
+        RETURN NEW;
+        
+    ELSIF (TG_OP = 'DELETE') THEN
+        UPDATE info_asset
+        SET incident_count = GREATEST(0, COALESCE(incident_count, 0) - 1)
+        WHERE id = OLD.id_info_asset;
+        RETURN OLD;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER trigger_update_asset_incident_count
-AFTER INSERT ON incident
+CREATE OR REPLACE TRIGGER trg_compromised_asset_changes
+AFTER INSERT OR DELETE ON compromised_info_asset
 FOR EACH ROW
-EXECUTE FUNCTION update_asset_incident_count();
+EXECUTE FUNCTION manage_incident_count();
 
 CREATE OR REPLACE FUNCTION check_owner_before_work()  -- 9
 RETURNS TRIGGER AS $$

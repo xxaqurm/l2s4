@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS info_asset (  -- информационные акт�
     name VARCHAR(50) NOT NULL,
     asset_type VARCHAR(50) NOT NULL,
     invent_number INT NOT NULL,
-    count_of_incidents INT, 
+    incident_count INT,
     expl_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -75,17 +75,28 @@ CREATE TABLE IF NOT EXISTS accounts (  -- учетные записи
     block_flag BOOLEAN NOT NULL DEFAULT false
 );
 
+CREATE TABLE IF NOT EXISTS incident_source (  -- источник инцидента
+    id SERIAL PRIMARY KEY,
+
+    id_source_type INT NOT NULL REFERENCES source_type(id) ON DELETE CASCADE,
+    --id_incident INT REFERENCES incident(id) ON DELETE CASCADE,
+
+    indentified_date TIMESTAMP NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS incident (  -- инцидент
     id SERIAL PRIMARY KEY,
 
     id_sla INT REFERENCES sla(id) ON DELETE CASCADE,
     id_employee INT REFERENCES employee(id) ON DELETE CASCADE,
+    id_incident_source INT REFERENCES incident_source(id) ON DELETE CASCADE,
 
     title VARCHAR(50) NOT NULL,
     description VARCHAR(200) NOT NULL,
     detective_time TIMESTAMP NOT NULL,
     fixed_time TIMESTAMP,
-    status VARCHAR(20) NOT NULL
+    status VARCHAR(20) NOT NULL,
+    processing_delay BOOLEAN
 );
 
 CREATE TABLE IF NOT EXISTS remedial_measure (  -- мера устранения
@@ -125,15 +136,6 @@ CREATE TABLE IF NOT EXISTS log_files (  -- журнал логов
     event_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     event_type VARCHAR(50) NOT NULL,
     description VARCHAR(200) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS incident_source (  -- источник инцидента
-    id SERIAL PRIMARY KEY,
-
-    id_source_type INT NOT NULL REFERENCES source_type(id) ON DELETE CASCADE,
-    id_incident INT REFERENCES incident(id) ON DELETE CASCADE,
-
-    indentified_date TIMESTAMP NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS severity_level (  -- уровень критичности
