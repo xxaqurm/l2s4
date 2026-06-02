@@ -128,7 +128,7 @@ INSERT INTO incident (id_sla, id_employee, title, description, detective_time, f
 (2, 4, 'Инцидент 5', 'Фишинг', NOW() - INTERVAL '8 days', NOW() - INTERVAL '3 days', 'resolved'),
 (1, 5, 'Инцидент 6', 'Вредоносное ПО', NOW() - INTERVAL '12 days', NULL, 'in work');
 
-INSERT INTO remedial_measure (id_incident, id_access_perm, title, description, average_actions, exec_date) VALUES
+INSERT INTO remedial_measure (id, id_access_perm, title, description, average_actions, exec_date) VALUES
 (1, 1, 'Patch SQL Vuln', 'Обновление базы данных', 5, NOW() - INTERVAL '5 days'),
 (2, 2, 'Access Review', 'Проверка прав доступа', 3, NOW() - INTERVAL '10 days'),
 (3, 1, 'Security Hardening', 'Усиление безопасности', 8, NOW()),
